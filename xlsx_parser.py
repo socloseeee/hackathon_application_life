@@ -23,6 +23,7 @@ if __name__ == "__main__":
         try:
             applyment = np.int64(input('Введите номер заявки > '))
         except Exception:
+            print('Неккоректный ввод!')
             continue
         if applyment in numbers:
             break
