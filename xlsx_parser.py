@@ -20,7 +20,10 @@ if __name__ == "__main__":
     files_data, numbers = read_data(columns, dates)
     print(files_data[dates[0]]['Номер заявки'].value_counts()[:5], '\n')  # топ 5 значений по повторам в первом файле
     while True:
-        applyment = np.int64(input('Введите номер заявки > '))
+        try:
+            applyment = np.int64(input('Введите номер заявки > '))
+        except Exception:
+            continue
         if applyment in numbers:
             break
         print('Некорректный ввод!')
