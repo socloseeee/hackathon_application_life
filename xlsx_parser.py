@@ -13,9 +13,9 @@ pd.options.display.float_format ='{:.0f}'.format
 
 def read_data(columns, dates) -> tuple:
     data, numbers, INN = {}, set(), set()
-    for date, i in zip(dates, range(sum(1 for x in Path('xlsx_files').iterdir()))):
+    for date, i in zip(dates, range(sum(1 for x in Path('data').iterdir()))):
         data[date] = pd.read_excel(
-            Path(f"xlsx_files/Аудит заявок РФ_{dates[i]}.xlsx"),
+            Path(f"data/Аудит заявок РФ_{dates[i]}.xlsx"),
             usecols=columns
         )
         numbers = numbers | set(data[date]['Номер заявки'].values)
@@ -118,7 +118,7 @@ def selection_of_period(date_slice, dates) -> tuple:
 
 
 def dates_read_from_files() -> tuple:
-    content = os.listdir(Path("xlsx_files"))
+    content = os.listdir(Path("data"))
     return tuple(data[data.index('_') + 1:data.index('.xlsx')] for data in content)
 
 
