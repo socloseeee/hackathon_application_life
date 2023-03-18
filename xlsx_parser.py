@@ -1,10 +1,11 @@
 import pandas as pd
 from pathlib import Path
 import numpy as np
+import os
 
 
 pd.set_option('display.max_rows', None)
-#pd.set_option('display.max_columns', None)
+# pd.set_option('display.max_columns', None)
 
 
 def read_data(columns, dates) -> tuple:
@@ -107,11 +108,19 @@ def selection_of_period(date_slice, dates) -> tuple:
     return result
 
 
+def dates_read_from_files() -> tuple:
+    content = os.listdir(Path("xlsx_files"))
+    return tuple(data[data.index('_') + 1:data.index('.xlsx')] for data in content)
+
+
 if __name__ == "__main__":
 
-    columns: tuple = ('Номер заявки', 'Статус', 'Услуга', 'Дата регистрации заявки')  # Клиент*
-    dates: tuple = ('09.03.23', '10.03.23', '12.03.23', '13.03.23', '14.03.23', '15.03.23')
-    files_data, numbers = read_data(columns, dates)
+    columns: tuple = ('Номер заявки', 'Клиент*' ,'Статус', 'Услуга', 'Дата регистрации заявки')
+    dates: tuple = dates_read_from_files()  # написать функцию считывающие с файлов дату
+    # print(dates)
+
+    files_data, numbers = read_data(columns, dates)# , applyment_number)
+    print(files_data)
 
     date_slice: tuple = form_date(dates)
     print(date_slice)
@@ -120,7 +129,7 @@ if __name__ == "__main__":
 
     print(files_data[dates[0]]['Номер заявки'].value_counts()[:5], '\n')  # топ 5 значений по повторам в первом файле
 
-    applyment = return_value('Введите номер заявки > ', np.int64, numbers)
+    applyment_number = return_value('Введите номер заявки > ', np.int64, numbers)
 
     print(
         *(files_data[data].loc[files_data[data]['Номер заявки'] == applyment] for data in selected_period), sep='\n'
