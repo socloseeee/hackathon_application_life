@@ -30,3 +30,13 @@ def return_value(msg, type, check=None) -> [int, str]:
         print('Некорректный ввод!')
     return value
 ```
+## JSON 
+```python
+{
+    start_day: int,
+    end_day: int,
+    month: str,
+    year: str,
+    applyment_number: int
+}
+```

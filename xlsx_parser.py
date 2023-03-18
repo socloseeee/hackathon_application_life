@@ -74,7 +74,7 @@ def form_date(dates) -> tuple:
                 print('Неккоректный день!')
                 continue
             for elem in days:
-                if elem in range(start_day, end_day):
+                if elem in range(start_day, end_day + 1):
                     raise Exception
                 else:
                     print('По данному периоду нет данных!')
@@ -115,22 +115,29 @@ def dates_read_from_files() -> tuple:
 
 if __name__ == "__main__":
 
-    columns: tuple = ('Номер заявки', 'Клиент*' ,'Статус', 'Услуга', 'Дата регистрации заявки')
+    columns: tuple = (
+        'Номер заявки', 'Клиент*' ,'ИНН', 'Статус', 'Дата входа заявки в статус', 'Услуга', 'Дата регистрации заявки',
+        'Дата регистрации под заявки', 'Рег. наряда на ТВП', 'Дата отклонения под заявки', 'Тип проверки ТВП',
+        'Наличие ТВП', 'Завершение проверки ТВП', 'Длит. проверки ТВП', '№ клиентский СУС', 'Дата отправки на АПТВ',
+        'Дата окончания АПТВ планируемая', 'Дата окончания АПТВ фактическая', 'Длительность этапа АПТВ',
+        'Дата отправки на ДО', 'Дата окончания ДО планируемая', 'Дата окончания ДО фактическая', 'Длительность этапа ДО'
+    )
     dates: tuple = dates_read_from_files()  # написать функцию считывающие с файлов дату
     # print(dates)
-
-    files_data, numbers = read_data(columns, dates)# , applyment_number)
-    print(files_data)
 
     date_slice: tuple = form_date(dates)
     print(date_slice)
     selected_period: tuple = selection_of_period(date_slice, dates)
     print(selected_period)
 
-    print(files_data[dates[0]]['Номер заявки'].value_counts()[:5], '\n')  # топ 5 значений по повторам в первом файле
+    files_data, numbers = read_data(columns, selected_period)# , applyment_number)
+    # print(files_data)
+
+    print(files_data[selected_period[0]]['Номер заявки'].value_counts()[:5], '\n')  # топ 5 значений по повторам в первом файле
 
     applyment_number = return_value('Введите номер заявки > ', np.int64, numbers)
+    INN = applyment_number = return_value('Введите номер заявки > ', np.int64, numbers)
 
     print(
-        *(files_data[data].loc[files_data[data]['Номер заявки'] == applyment] for data in selected_period), sep='\n'
+        *(files_data[data].loc[files_data[data]['Номер заявки'] == applyment_number] for data in selected_period), sep='\n'
     )
