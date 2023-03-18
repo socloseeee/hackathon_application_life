@@ -58,5 +58,5 @@ import pandas as pd
 ```python
 INN_dict: dict  # Данные отфильтрованные по ИНН
 applyment_dict: dict  # Данные отфильтрованные по ИНН + номеру заявки
-application_life: dict  # Жизненный цикл
+application_life: pd.DataFrame  # Жизненный цикл
 ```
