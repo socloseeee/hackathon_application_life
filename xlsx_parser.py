@@ -4,16 +4,22 @@ import numpy as np
 import os
 
 
-pd.set_option('display.max_rows', None)
-# pd.set_option('display.max_columns', None)
+pd.set_option('display.max_colwidth', 20)
+pd.set_option('display.max_rows', 10)
+pd.set_option('display.max_columns', 10)
+pd.options.display.float_format ='{:.0f}'.format
 
 
 def read_data(columns, dates) -> tuple:
-    data, numbers = {}, set()
+    data, numbers, INN = {}, set(), set()
     for date, i in zip(dates, range(sum(1 for x in Path('xlsx_files').iterdir()))):
-        data[date] = pd.read_excel(Path(f"xlsx_files/Аудит заявок РФ_{dates[i]}.xlsx"), usecols=columns)
+        data[date] = pd.read_excel(
+            Path(f"xlsx_files/Аудит заявок РФ_{dates[i]}.xlsx"),
+            usecols=columns
+        )
         numbers = numbers | set(data[date]['Номер заявки'].values)
-    return data, numbers
+        INN = INN | set(data[date]['ИНН'].values)
+    return data, numbers, INN
 
 
 def return_value(msg, type, check=None) -> [int, str]:
@@ -76,9 +82,8 @@ def form_date(dates) -> tuple:
             for elem in days:
                 if elem in range(start_day, end_day + 1):
                     raise Exception
-                else:
-                    print('По данному периоду нет данных!')
-                    break
+            else:
+                print('В данные дни отсутствуют файлы аудита!')
     except Exception:
         pass
 
@@ -116,28 +121,53 @@ def dates_read_from_files() -> tuple:
 if __name__ == "__main__":
 
     columns: tuple = (
-        'Номер заявки', 'Клиент*' ,'ИНН', 'Статус', 'Дата входа заявки в статус', 'Услуга', 'Дата регистрации заявки',
-        'Дата регистрации под заявки', 'Рег. наряда на ТВП', 'Дата отклонения под заявки', 'Тип проверки ТВП',
-        'Наличие ТВП', 'Завершение проверки ТВП', 'Длит. проверки ТВП', '№ клиентский СУС', 'Дата отправки на АПТВ',
-        'Дата окончания АПТВ планируемая', 'Дата окончания АПТВ фактическая', 'Длительность этапа АПТВ',
-        'Дата отправки на ДО', 'Дата окончания ДО планируемая', 'Дата окончания ДО фактическая', 'Длительность этапа ДО'
+        'Номер заявки', 'Клиент*' ,'ИНН', 'Статус', #'Дата входа заявки в статус', 'Услуга', 'Дата регистрации заявки',
+        #'Дата регистрации под заявки', 'Рег. наряда на ТВП', 'Дата отклонения под заявки', 'Тип проверки ТВП',
+        #'Наличие ТВП', 'Завершение проверки ТВП', 'Длит. проверки ТВП', '№ клиентский СУС', 'Дата отправки на АПТВ',
+        #'Дата окончания АПТВ планируемая', 'Дата окончания АПТВ фактическая', 'Длительность этапа АПТВ',
+        #'Дата отправки на ДО', 'Дата окончания ДО планируемая', 'Дата окончания ДО фактическая', 'Длительность этапа ДО'
     )
     dates: tuple = dates_read_from_files()  # написать функцию считывающие с файлов дату
     # print(dates)
 
     date_slice: tuple = form_date(dates)
-    print(date_slice)
+    # print(date_slice)
     selected_period: tuple = selection_of_period(date_slice, dates)
-    print(selected_period)
+    # print(selected_period, '\n')
 
-    files_data, numbers = read_data(columns, selected_period)# , applyment_number)
+    files_data, numbers, INNs = read_data(columns, selected_period)
+    # files_data[dates[0]]['ИНН'] = files_data[dates[0]]['ИНН'].astype(np.int32)
     # print(files_data)
 
-    print(files_data[selected_period[0]]['Номер заявки'].value_counts()[:5], '\n')  # топ 5 значений по повторам в первом файле
+    # while True:
+    print(files_data[dates[0]]['Номер заявки'].value_counts()[:5], '\n')  # топ 5 значений по повторам в первом файле
+    print(files_data[dates[0]]['ИНН'].value_counts(), '\n')
+
+    INN = return_value('ИНН > ', np.int64, INNs)
+
+    INN_dict: dict = {}
+
+    # Сортируем по ИНН
+    for data in selected_period:
+        INN_SORT[data] = files_data[data].loc[files_data[data]['ИНН'] == INN]
+    print(*(dict_to_sort[data] for data in selected_period), sep='\n\n')
 
     applyment_number = return_value('Введите номер заявки > ', np.int64, numbers)
-    INN = applyment_number = return_value('Введите номер заявки > ', np.int64, numbers)
+    applyment_dict: dict = {}
+    values = []
+    # Сортируем по номеру заявки
+    for data in selected_period:
+        value = INN_dict[data].loc[INN_dict[data]['Номер заявки'] == applyment_number]
+        values.append(value)
+        applyment_dict[data] = value
 
-    print(
-        *(files_data[data].loc[files_data[data]['Номер заявки'] == applyment_number] for data in selected_period), sep='\n'
-    )
+    application_life = pd.DataFrame(values[0], columns=columns)
+    values.pop(0)
+    for i in range(1, len(values)):
+        if not pd.DataFrame(values[i], columns=columns).empty:
+            application_life = pd.concat([application_life, pd.DataFrame(values[i], columns=columns)])
+
+
+    application_life = application_life.drop_duplicates(subset=['Статус'])
+    #print(*(dict_to_sort[data] for data in selected_period), sep='\n\n')
+    print(application_life)

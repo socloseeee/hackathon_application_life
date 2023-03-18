@@ -30,8 +30,8 @@ def return_value(msg, type, check=None) -> [int, str]:
         print('Некорректный ввод!')
     return value
 ```
-## JSON 
-```python
+### JSON 
+```json
 {
     start_day: int,
     end_day: int,
@@ -39,4 +39,24 @@ def return_value(msg, type, check=None) -> [int, str]:
     year: str,
     applyment_number: int
 }
+```
+## Вывод
+
+
+```python
+import pandas as pd
+{
+    INN_dict: {
+        date: pd.DataFrame
+    },
+    applyment_dict: {
+        date: pd.DataFrame
+    },
+    application_life: pd.DataFrame
+}
+```
+```python
+INN_dict: dict  # Данные отфильтрованные по ИНН
+applyment_dict: dict  # Данные отфильтрованные по ИНН + номеру заявки
+application_life: dict  # Жизненный цикл
 ```
