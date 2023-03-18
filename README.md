@@ -31,7 +31,7 @@ def return_value(msg, type, check=None) -> [int, str]:
     return value
 ```
 ### JSON 
-```json
+```python
 {
     start_day: int,
     end_day: int,
