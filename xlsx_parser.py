@@ -1,3 +1,4 @@
+import sys
 import pandas as pd
 from pathlib import Path
 import numpy as np
@@ -22,7 +23,7 @@ def read_data(columns, dates) -> tuple:
     return data, numbers, INN
 
 
-def return_value(msg, type, check=None) -> [int, str]:
+def return_value(msg, type, check=None, val=None) -> [int, str]:
     while True:
         try:
             value = type(input(msg))
@@ -52,40 +53,43 @@ def form_date(dates) -> tuple:
 
     # Выбор месяца
     while True:
-        month = '03'  # return_value('Введите месяц > ', int)
+        month = str(sys.argv[3])  # return_value('Введите месяц > ', int)
         if month in monthes:
             break
         print('Неккоректный ввод!')
+        sys.exit(1)
 
     # Выбор года
     while True:
-        year = '23'  # return_value('Введите год > ', int)
+        year = str(sys.argv[4])  # return_value('Введите год > ', int)
         if month in monthes:
             break
         print('Неккоректный ввод!')
+        sys.exit(1)
 
     # Проверка корректности ввода и ввод дней
     try:
         while True:
             while True:
-                start_day = return_value('Введите начальный день > ', int)
+                start_day = int(sys.argv[1])  #return_value('Введите начальный день > ', int)
                 if 0 < start_day < 31:
                     break
                 print('Неккоректный день!')
-                continue
+                sys.exit(1)
             while True:
-                end_day = return_value('Введите конечный день > ', int)
+                end_day = int(sys.argv[2])  #return_value('Введите конечный день > ', int)
                 if 0 < end_day < 31 and end_day >= start_day:
                     break
                 print('Неккоректный день!')
-                continue
+                sys.exit(1)
             for elem in days:
                 if elem in range(start_day, end_day + 1):
                     raise Exception
             else:
+                sys.exit(1)
                 print('В данные дни отсутствуют файлы аудита!')
     except Exception:
-        pass
+        sys.exit(1)
 
     start_day = '0' + str(start_day) if start_day < 10 else str(start_day)
     end_day = '0' + str(end_day) if end_day < 10 else str(end_day)
@@ -119,55 +123,63 @@ def dates_read_from_files() -> tuple:
 
 
 if __name__ == "__main__":
+    # print('dsadas')
+    if len(sys.argv) == 7:
+        columns: tuple = (
+            'Номер заявки', 'Клиент*' ,'ИНН', 'Статус', #'Дата входа заявки в статус', 'Услуга', 'Дата регистрации заявки',
+            #'Дата регистрации под заявки', 'Рег. наряда на ТВП', 'Дата отклонения под заявки', 'Тип проверки ТВП',
+            #'Наличие ТВП', 'Завершение проверки ТВП', 'Длит. проверки ТВП', '№ клиентский СУС', 'Дата отправки на АПТВ',
+            #'Дата окончания АПТВ планируемая', 'Дата окончания АПТВ фактическая', 'Длительность этапа АПТВ',
+            #'Дата отправки на ДО', 'Дата окончания ДО планируемая', 'Дата окончания ДО фактическая', 'Длительность этапа ДО'
+        )
+        dates: tuple = dates_read_from_files()  # написать функцию считывающие с файлов дату
+        # print(dates)
 
-    columns: tuple = (
-        'Номер заявки', 'Клиент*' ,'ИНН', 'Статус', #'Дата входа заявки в статус', 'Услуга', 'Дата регистрации заявки',
-        #'Дата регистрации под заявки', 'Рег. наряда на ТВП', 'Дата отклонения под заявки', 'Тип проверки ТВП',
-        #'Наличие ТВП', 'Завершение проверки ТВП', 'Длит. проверки ТВП', '№ клиентский СУС', 'Дата отправки на АПТВ',
-        #'Дата окончания АПТВ планируемая', 'Дата окончания АПТВ фактическая', 'Длительность этапа АПТВ',
-        #'Дата отправки на ДО', 'Дата окончания ДО планируемая', 'Дата окончания ДО фактическая', 'Длительность этапа ДО'
-    )
-    dates: tuple = dates_read_from_files()  # написать функцию считывающие с файлов дату
-    # print(dates)
+        date_slice: tuple = form_date(dates)
+        # print(date_slice)
+        selected_period: tuple = selection_of_period(date_slice, dates)
+        # print(selected_period, '\n')
 
-    date_slice: tuple = form_date(dates)
-    # print(date_slice)
-    selected_period: tuple = selection_of_period(date_slice, dates)
-    # print(selected_period, '\n')
+        files_data, numbers, INNs = read_data(columns, selected_period)
+        # files_data[dates[0]]['ИНН'] = files_data[dates[0]]['ИНН'].astype(np.int32)
+        # print(files_data)
 
-    files_data, numbers, INNs = read_data(columns, selected_period)
-    # files_data[dates[0]]['ИНН'] = files_data[dates[0]]['ИНН'].astype(np.int32)
-    # print(files_data)
+        # while True:
+        print(files_data[dates[0]]['Номер заявки'].value_counts()[:5], '\n')  # топ 5 значений по повторам в первом файле
+        print(files_data[dates[0]]['ИНН'].value_counts(), '\n')
 
-    # while True:
-    print(files_data[dates[0]]['Номер заявки'].value_counts()[:5], '\n')  # топ 5 значений по повторам в первом файле
-    print(files_data[dates[0]]['ИНН'].value_counts(), '\n')
+        INN = np.int64(sys.argv[5])  # return_value('ИНН > ', np.int64, INNs)
 
-    INN = return_value('ИНН > ', np.int64, INNs)
+        INN_dict: dict = {}
 
-    INN_dict: dict = {}
+        # Сортируем по ИНН
+        for data in selected_period:
+            INN_dict[data] = files_data[data].loc[files_data[data]['ИНН'] == INN]
+        print('ИНН cловарь:')
+        print(*(INN_dict[data] for data in selected_period), sep='\n\n')
 
-    # Сортируем по ИНН
-    for data in selected_period:
-        INN_SORT[data] = files_data[data].loc[files_data[data]['ИНН'] == INN]
-    print(*(dict_to_sort[data] for data in selected_period), sep='\n\n')
+        applyment_number = np.int64(sys.argv[6])  #return_value('Введите номер заявки > ', np.int64, numbers)
+        applyment_dict: dict = {}
+        values = []
+        # Сортируем по номеру заявки
+        for data in selected_period:
+            value = INN_dict[data].loc[INN_dict[data]['Номер заявки'] == applyment_number]
+            # if not value.empty:
+            values.append(value)
+            applyment_dict[data] = value
+        print('\nНомер заявки cловарь:')
+        print(*(applyment_dict[data] for data in selected_period), sep='\n\n')
 
-    applyment_number = return_value('Введите номер заявки > ', np.int64, numbers)
-    applyment_dict: dict = {}
-    values = []
-    # Сортируем по номеру заявки
-    for data in selected_period:
-        value = INN_dict[data].loc[INN_dict[data]['Номер заявки'] == applyment_number]
-        values.append(value)
-        applyment_dict[data] = value
-
-    application_life = pd.DataFrame(values[0], columns=columns)
-    values.pop(0)
-    for i in range(1, len(values)):
-        if not pd.DataFrame(values[i], columns=columns).empty:
-            application_life = pd.concat([application_life, pd.DataFrame(values[i], columns=columns)])
+        application_life = pd.DataFrame(values[0], columns=columns)
+        values.pop(0)
+        for i in range(len(values)):
+            if not pd.DataFrame(values[i], columns=columns).empty:
+                application_life = pd.concat([application_life, pd.DataFrame(values[i], columns=columns)])
 
 
-    application_life = application_life.drop_duplicates(subset=['Статус'])
-    #print(*(dict_to_sort[data] for data in selected_period), sep='\n\n')
-    print(application_life)
+        application_life = application_life.drop_duplicates(subset=['Статус'])
+        #print(*(dict_to_sort[data] for data in selected_period), sep='\n\n')
+        print('\nЖизненный цикл:\n', application_life)
+        sys.exit(0)
+    else:
+        sys.exit(1)

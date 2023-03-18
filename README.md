@@ -1,4 +1,10 @@
 # Hackathon Application Life
+## Активировать
+1. python -m venv venv
+2. venv\Scritps\activate
+3. 
+4. pip install -r requirements.txt (requirements.txt уже есть у нас)
+
 ## Вводы
 1. Ввод года, месяца и дня (Ввод месяца и года закомментирован, но есть такая опция)
 ```python
