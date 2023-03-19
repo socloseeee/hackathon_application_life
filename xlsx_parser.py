@@ -165,8 +165,8 @@ def selection_of_period(date_slice, dates) -> tuple:
     return result
 
 
-def dates_read_from_files() -> tuple:
-    content = os.listdir(Path("data"))  # сделать переменной
+def dates_read_from_files(path=None) -> tuple:
+    content = os.listdir(path if path is not None else Path("data"))  # сделать переменной
     return tuple(data[data.index('_') + 1:data.index('.xlsx')] for data in content)
 
 
@@ -188,7 +188,11 @@ if __name__ == "__main__":
     arg_names = [elem[len(elem) - elem[::-1].index('-'):] for elem in console_arg_names]
     values = [eval(f"args.{elem}") for elem in arg_names]
 
-    if len(arg_names) == 4:
+    first_issue = {'start_date', 'end_date', 'INN'}
+    second_issue = {'start_date', 'end_date', 'order'}
+    third_issue = {'start_date', 'end_date', 'INN', 'order'}
+
+    if set(arg_names) in (first_issue, second_issue, third_issue):
         columns: tuple = (
               'Номер заявки', 'Клиент*' ,'ИНН', 'Статус',# 'Дата входа заявки в статус', 'Услуга', 'Дата регистрации заявки',
             # 'Дата регистрации под заявки', 'Рег. наряда на ТВП', 'Дата отклонения под заявки', 'Тип проверки ТВП',
@@ -196,7 +200,7 @@ if __name__ == "__main__":
             # 'Дата окончания АПТВ планируемая', 'Дата окончания АПТВ фактическая', 'Длительность этапа АПТВ',
             # 'Дата отправки на ДО', 'Дата окончания ДО планируемая', 'Дата окончания ДО фактическая', 'Длительность этапа ДО'
         )
-        dates: tuple = dates_read_from_files()  # написать функцию считывающие с файлов дату
+        dates: tuple = dates_read_from_files(args.path if 'path' in arg_names else None)  # написать функцию считывающие с файлов дату
         # print(dates)
 
         date_slice: tuple = form_date(dates, start_date=values[0], end_date=values[1])
@@ -216,38 +220,56 @@ if __name__ == "__main__":
         print(files_data[dates[0]]['Номер заявки'].value_counts()[:5], '\n')  # топ 5 значений по повторам в первом файле
         print(files_data[dates[0]]['ИНН'].value_counts(), '\n')
 
-        INN = np.int64(values[2])  # return_value('ИНН > ', np.int64, INNs)
-
-        INN_response: list = []
+        INN = None if 'INN' not in arg_names else args.INN  # return_value('ИНН > ', np.int64, INNs)
         INN_dict: dict = {}
-
-        # Сортируем по ИНН
-        for date in selected_period:
-            value = files_data[date].loc[files_data[date]['ИНН'] == INN]
-            INN_response.append({'date': date})
-            for col in columns:
-                INN_response[-1][col] = value[col].values
-            INN_dict[date] = files_data[date].loc[files_data[date]['ИНН'] == INN]
-        print('ИНН (response):')
-        print(INN_response, sep='\n\n')
-
-        applyment_number = np.int64(values[3])  #return_value('Введите номер заявки > ', np.int64, numbers)
-
-        applyment_response: list = []
-        applyment_dict: dict = {}
         values = []
 
-        # Сортируем по номеру заявки
-        print('\nНомер заявки (response):')
-        for date in selected_period:
-            value = INN_dict[date].loc[INN_dict[date]['Номер заявки'] == applyment_number]
-            if not value.empty:
-                values.append((value, date))
-                applyment_response.append({'date': date})
-                for col in columns:
-                    applyment_response[-1][col] = value[col].values
-                applyment_dict[date] = value
-        print(applyment_response, sep='\n\n')
+        if INN != None:
+            INN = np.int64(INN)
+            INN_response: list = []
+
+            # Сортируем по ИНН
+            for date in selected_period:
+                value = files_data[date].loc[files_data[date]['ИНН'] == INN]
+                if not value.empty:
+                    values.append((value, date))
+                    INN_response.append({'date': date})
+                    for col in columns:
+                        INN_response[-1][col] = value[col].values
+                    INN_dict[date] = files_data[date].loc[files_data[date]['ИНН'] == INN]
+            if len(values) == 0:
+                print('Неккоректный ИНН!')
+                sys.exit(1)
+            print('ИНН (response):')
+            print(INN_response, sep='\n\n')
+        else:
+            INN_dict = files_data.copy()
+        # print(args.order)
+        applyment_number = None if 'order' not in arg_names else args.order  #return_value('Введите номер заявки > ', np.int64, numbers)
+
+        applyment_dict: dict = {}
+
+        if applyment_number != None:
+            applyment_number = np.int64(applyment_number)
+            applyment_response: list = []
+            values = []
+            # Сортируем по номеру заявки
+            print('\nНомер заявки (response):')
+            for date in selected_period:
+                value = INN_dict[date].loc[INN_dict[date]['Номер заявки'] == applyment_number]
+                if not value.empty:
+                    values.append((value, date))
+                    applyment_response.append({'date': date})
+                    for col in columns:
+                        applyment_response[-1][col] = value[col].values
+                    applyment_dict[date] = value
+            # print(values)
+            if len(values) == 0:
+                print('Неккоректный номер заявки!')
+                sys.exit(1)
+            print(applyment_response, sep='\n\n')
+        else:
+            applyment_dict = INN_dict.copy()
 
         application_life = pd.DataFrame(values[0][0], columns=columns)
 
