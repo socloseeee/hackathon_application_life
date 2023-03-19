@@ -56,6 +56,9 @@ def form_date(dates, start_date=None, end_date=None) -> tuple:
     start_day, start_month, start_year = map(int, start_date.split('.'))
     end_day, end_month, end_year = map(int, end_date.split('.'))
 
+    start_year = start_year - 2000 if start_year > 2000 else start_year
+    end_year = end_year - 2000 if end_year > 2000 else end_year
+
     days, monthes, years = [], set(), set()
     for day, month, year in [elem.split('.') for elem in dates]:
         days.append(int(day))
