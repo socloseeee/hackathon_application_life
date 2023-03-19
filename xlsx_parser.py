@@ -290,7 +290,8 @@ if __name__ == "__main__":
             application_response.append({'date': application_life['date'].iloc[i]})
             for elem in application_life:
                 application_response[-1][elem] = application_life[elem].iloc[i]
-        # print('\nЖизненный цикл (response):\n', application_response)
+        # print('\nЖизненный цикл (response):\n')
+        print(application_response)
         sys.exit(0)
     else:
         print('Не совпадает количество переменных из консольного ввода!')
