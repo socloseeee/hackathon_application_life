@@ -213,9 +213,9 @@ if __name__ == "__main__":
 
         files_data, numbers, INNs = read_data(columns, selected_period)
 
-        files_data[dates[-3]]['Клиент*'] = files_data[dates[-3]]['Клиент*'].str.replace('[<span style="color: red;padding:2px">, </span>]', '', regex=True)
+        # files_data[dates[-3]]['Клиент*'] = files_data[dates[-3]]['Клиент*'].str.replace('[<span style="color: red;padding:2px">, </span>]', '', regex=True)
 
-        print(files_data[dates[-3]]['Клиент*'])
+        # print(files_data[dates[-3]]['Клиент*'])
         # files_data[dates[0]]['ИНН'] = files_data[dates[0]]['ИНН'].astype(np.int32)
         # print(files_data)
 
