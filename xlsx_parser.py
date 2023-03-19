@@ -20,7 +20,7 @@ def read_data(columns, dates) -> tuple:
     data, numbers, INN = {}, set(), set()
     for date, i in zip(dates, range(sum(1 for x in Path('data').iterdir()))):
         data[date] = pd.read_excel(
-            Path(f"data/Аудит заявок РФ_{dates[i]}.xlsx"),
+            os.path.abspath(f"data/_{dates[i]}.xlsx"),
             # dtype={'Наряд КУРС':None, 'Номер ОТА ШПД':None},
             usecols=columns
         )
@@ -249,8 +249,8 @@ if __name__ == "__main__":
         else:
             INN_dict = files_data.copy()
         # print(args.order)
-        applyment_number = None if 'order' not in arg_names else args.order  #return_value('Введите номер заявки > ', np.int64, numbers)
 
+        applyment_number = None if 'order' not in arg_names else args.order  #return_value('Введите номер заявки > ', np.int64, numbers)
         applyment_dict: dict = {}
 
         if applyment_number != None:
