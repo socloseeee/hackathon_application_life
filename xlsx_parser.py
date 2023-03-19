@@ -169,7 +169,7 @@ def selection_of_period(date_slice, dates) -> tuple:
 
 
 def dates_read_from_files(path=None) -> tuple:
-    content = os.listdir(path if path is not None else Path("data"))  # сделать переменной
+    content = os.listdir(path if path is not None else os.path.abspath("data"))  # сделать переменной
     return tuple(data[data.index('_') + 1:data.index('.xlsx')] for data in content)
 
 
