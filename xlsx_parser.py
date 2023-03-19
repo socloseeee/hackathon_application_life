@@ -213,15 +213,16 @@ if __name__ == "__main__":
 
         files_data, numbers, INNs = read_data(columns, selected_period)
 
-        # files_data[dates[-3]]['Клиент*'] = files_data[dates[-3]]['Клиент*'].str.replace('[<span style="color: red;padding:2px">, </span>]', '', regex=True)
+        for date in selected_period:
+            files_data[date]['Клиент*'] = files_data[date]['Клиент*'].str.replace('[<span style="color: red;padding:2px">, </span>]', '', regex=True)
 
         # print(files_data[dates[-3]]['Клиент*'])
         # files_data[dates[0]]['ИНН'] = files_data[dates[0]]['ИНН'].astype(np.int32)
         # print(files_data)
 
         # while True:
-        print(files_data[dates[0]]['Номер заявки'].value_counts()[:5], '\n')  # топ 5 значений по повторам в первом файле
-        print(files_data[dates[0]]['ИНН'].value_counts(), '\n')
+        # print(files_data[dates[0]]['Номер заявки'].value_counts()[:5], '\n')  # топ 5 значений по повторам в первом файле
+        # print(files_data[dates[0]]['ИНН'].value_counts(), '\n')
 
         INN = None if 'INN' not in arg_names else args.INN  # return_value('ИНН > ', np.int64, INNs)
         INN_dict: dict = {}
