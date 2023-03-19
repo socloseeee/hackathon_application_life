@@ -1,8 +1,13 @@
 import sys
 import pandas as pd
-from pathlib import Path
+from pathlib import Path, PurePath
 import numpy as np
 import os
+import argparse
+import warnings
+
+
+warnings.simplefilter("ignore")
 
 
 pd.set_option('display.max_colwidth', 20)
@@ -16,6 +21,7 @@ def read_data(columns, dates) -> tuple:
     for date, i in zip(dates, range(sum(1 for x in Path('data').iterdir()))):
         data[date] = pd.read_excel(
             Path(f"data/Аудит заявок РФ_{dates[i]}.xlsx"),
+            # dtype={'Наряд КУРС':None, 'Номер ОТА ШПД':None},
             usecols=columns
         )
         numbers = numbers | set(data[date]['Номер заявки'].values)
@@ -38,7 +44,7 @@ def return_value(msg, type, check=None, val=None) -> [int, str]:
     return value
 
 
-def form_date(dates) -> tuple:
+def form_date(dates, start_date=None, end_date=None) -> tuple:
 
     start_day: int
     end_day: int
@@ -46,6 +52,9 @@ def form_date(dates) -> tuple:
     end_month: int
     start_year: int
     end_year: int
+
+    start_day, start_month, start_year = map(int, start_date.split('.'))
+    end_day, end_month, end_year = map(int, end_date.split('.'))
 
     days, monthes, years = [], set(), set()
     for day, month, year in [elem.split('.') for elem in dates]:
@@ -56,13 +65,13 @@ def form_date(dates) -> tuple:
     try:
         while True:
             while True:
-                start_day = int(sys.argv[1])  # return_value('Введите начальный день > ', int)
+                # start_day = int(sys.argv[1])  # return_value('Введите начальный день > ', int)
                 if 0 < start_day < 31:
                     break
                 print('Неккоректный день!')
                 sys.exit(1)
             while True:
-                end_day = int(sys.argv[2])  # return_value('Введите конечный день > ', int)
+                # end_day = int(sys.argv[2])  # return_value('Введите конечный день > ', int)
                 if 0 < end_day < 31 and end_day >= start_day:
                     break
                 print('Неккоректный день!')
@@ -80,20 +89,19 @@ def form_date(dates) -> tuple:
     try:
         while True:
             while True:
-                start_month = int(sys.argv[3])  #return_value('Введите начальный день > ', int)
+                # start_month = int(sys.argv[3])  #return_value('Введите начальный день > ', int)
                 if 0 < start_month < 12:
                     break
                 print('Неккоректный месяц!')
                 sys.exit(1)
             while True:
-                end_month = int(sys.argv[4])  #return_value('Введите конечный день > ', int)
+                # end_month = int(sys.argv[4])  #return_value('Введите конечный день > ', int)
                 if 0 < end_month < 12 and end_month >= start_month:
                     break
                 print('Неккоректный месяц!')
                 sys.exit(1)
             for elem in monthes:
                 if elem in range(start_month, end_month + 1):
-                    print(elem, start_month, end_month + 1)
                     raise Exception
             else:
                 print('В данные месяцы отсутствуют файлы аудита!')
@@ -105,13 +113,13 @@ def form_date(dates) -> tuple:
     try:
         while True:
             while True:
-                start_year = int(sys.argv[5])
+                # start_year = int(sys.argv[5])
                 if 0 < start_year < 24:
                     break
                 print('Неккоректный год!')
                 sys.exit(1)
             while True:
-                end_year = int(sys.argv[6])  # return_value('Введите конечный день > ', int)
+                # end_year = int(sys.argv[6])  # return_value('Введите конечный день > ', int)
                 if 0 < end_year < 24 and end_year >= start_year:
                     break
                 print('Неккоректный год!')
@@ -162,25 +170,45 @@ def dates_read_from_files() -> tuple:
     return tuple(data[data.index('_') + 1:data.index('.xlsx')] for data in content)
 
 
+def createParser(arg_names) -> argparse:
+    parser = argparse.ArgumentParser()
+    for elem in arg_names:
+        parser.add_argument(elem)
+    return parser
+
+
 if __name__ == "__main__":
-    print(sys.argv)
-    if len(sys.argv) == 9:
+
+    # Создание объекта Namespace с перечнем аргументов с консоли
+    console_arg_names = ('--start_date', '--end_date', '--INN', '--order')
+    parser = createParser(console_arg_names)
+    args = parser.parse_args(sys.argv[1:])
+
+    # Парсинг названий и значений переменных
+    arg_names = [elem[len(elem) - elem[::-1].index('-'):] for elem in console_arg_names]
+    values = [eval(f"args.{elem}") for elem in arg_names]
+
+    if len(arg_names) == 4:
         columns: tuple = (
-            'Номер заявки', 'Клиент*' ,'ИНН', 'Статус', #'Дата входа заявки в статус', 'Услуга', 'Дата регистрации заявки',
-            #'Дата регистрации под заявки', 'Рег. наряда на ТВП', 'Дата отклонения под заявки', 'Тип проверки ТВП',
-            #'Наличие ТВП', 'Завершение проверки ТВП', 'Длит. проверки ТВП', '№ клиентский СУС', 'Дата отправки на АПТВ',
-            #'Дата окончания АПТВ планируемая', 'Дата окончания АПТВ фактическая', 'Длительность этапа АПТВ',
-            #'Дата отправки на ДО', 'Дата окончания ДО планируемая', 'Дата окончания ДО фактическая', 'Длительность этапа ДО'
+              'Номер заявки', 'Клиент*' ,'ИНН', 'Статус',# 'Дата входа заявки в статус', 'Услуга', 'Дата регистрации заявки',
+            # 'Дата регистрации под заявки', 'Рег. наряда на ТВП', 'Дата отклонения под заявки', 'Тип проверки ТВП',
+            # 'Наличие ТВП', 'Завершение проверки ТВП', 'Длит. проверки ТВП', '№ клиентский СУС', 'Дата отправки на АПТВ',
+            # 'Дата окончания АПТВ планируемая', 'Дата окончания АПТВ фактическая', 'Длительность этапа АПТВ',
+            # 'Дата отправки на ДО', 'Дата окончания ДО планируемая', 'Дата окончания ДО фактическая', 'Длительность этапа ДО'
         )
         dates: tuple = dates_read_from_files()  # написать функцию считывающие с файлов дату
         # print(dates)
 
-        date_slice: tuple = form_date(dates)
+        date_slice: tuple = form_date(dates, start_date=values[0], end_date=values[1])
         # print(date_slice)
         selected_period: tuple = selection_of_period(date_slice, dates)
         # print(selected_period, '\n')
 
         files_data, numbers, INNs = read_data(columns, selected_period)
+
+        files_data[dates[-3]]['Клиент*'] = files_data[dates[-3]]['Клиент*'].str.replace('[<span style="color: red;padding:2px">, </span>]', '', regex=True)
+
+        print(files_data[dates[-3]]['Клиент*'])
         # files_data[dates[0]]['ИНН'] = files_data[dates[0]]['ИНН'].astype(np.int32)
         # print(files_data)
 
@@ -188,38 +216,55 @@ if __name__ == "__main__":
         print(files_data[dates[0]]['Номер заявки'].value_counts()[:5], '\n')  # топ 5 значений по повторам в первом файле
         print(files_data[dates[0]]['ИНН'].value_counts(), '\n')
 
-        INN = np.int64(sys.argv[7])  # return_value('ИНН > ', np.int64, INNs)
+        INN = np.int64(values[2])  # return_value('ИНН > ', np.int64, INNs)
 
+        INN_response: list = []
         INN_dict: dict = {}
 
         # Сортируем по ИНН
-        for data in selected_period:
-            INN_dict[data] = files_data[data].loc[files_data[data]['ИНН'] == INN]
-        print('ИНН cловарь:')
-        print(*(INN_dict[data] for data in selected_period), sep='\n\n')
+        for date in selected_period:
+            value = files_data[date].loc[files_data[date]['ИНН'] == INN]
+            INN_response.append({'date': date})
+            for col in columns:
+                INN_response[-1][col] = value[col].values
+            INN_dict[date] = files_data[date].loc[files_data[date]['ИНН'] == INN]
+        print('ИНН (response):')
+        print(INN_response, sep='\n\n')
 
-        applyment_number = np.int64(sys.argv[8])  #return_value('Введите номер заявки > ', np.int64, numbers)
+        applyment_number = np.int64(values[3])  #return_value('Введите номер заявки > ', np.int64, numbers)
+
+        applyment_response: list = []
         applyment_dict: dict = {}
         values = []
-        # Сортируем по номеру заявки
-        for data in selected_period:
-            value = INN_dict[data].loc[INN_dict[data]['Номер заявки'] == applyment_number]
-            # if not value.empty:
-            values.append(value)
-            applyment_dict[data] = value
-        print('\nНомер заявки cловарь:')
-        print(*(applyment_dict[data] for data in selected_period), sep='\n\n')
 
-        application_life = pd.DataFrame(values[0], columns=columns)
-        values.pop(0)
-        for i in range(len(values)):
-            if not pd.DataFrame(values[i], columns=columns).empty:
-                application_life = pd.concat([application_life, pd.DataFrame(values[i], columns=columns)])
+        # Сортируем по номеру заявки
+        print('\nНомер заявки (response):')
+        for date in selected_period:
+            value = INN_dict[date].loc[INN_dict[date]['Номер заявки'] == applyment_number]
+            if not value.empty:
+                values.append((value, date))
+                applyment_response.append({'date': date})
+                for col in columns:
+                    applyment_response[-1][col] = value[col].values
+                applyment_dict[date] = value
+        print(applyment_response, sep='\n\n')
+
+        application_life = pd.DataFrame(values[0][0], columns=columns)
+
+        for i in range(1, len(values)):
+            if not values[i][0].empty:
+                application_life = pd.concat([application_life, pd.DataFrame(values[i][0], columns=columns)])
+                application_life['date'] = values[i][1]
 
 
         application_life = application_life.drop_duplicates(subset=['Статус'])
-        #print(*(dict_to_sort[data] for data in selected_period), sep='\n\n')
-        print('\nЖизненный цикл:\n', application_life)
+        application_response: list = []
+
+        for i in range(application_life.shape[0]):
+            application_response.append({'date': application_life['date'].iloc[i]})
+            for elem in application_life:
+                application_response[-1][elem] = application_life[elem].iloc[i]
+        print('\nЖизненный цикл (response):\n', application_response)
         sys.exit(0)
     else:
         print('Не совпадает количество переменных из консольного ввода!')

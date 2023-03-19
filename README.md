@@ -2,8 +2,7 @@
 ## Активировать
 1. python -m venv venv
 2. venv\Scritps\activate
-3. 
-4. pip install -r requirements.txt (requirements.txt уже есть у нас)
+3. pip install -r requirements.txt (requirements.txt уже есть у нас)
 
 ## Вводы
 1. Ввод года, месяца и дня (Ввод месяца и года закомментирован, но есть такая опция)
@@ -50,19 +49,41 @@ def return_value(msg, type, check=None) -> [int, str]:
 
 
 ```python
-import pandas as pd
 {
-    INN_dict: {
-        date: pd.DataFrame
-    },
-    applyment_dict: {
-        date: pd.DataFrame
-    },
-    application_life: pd.DataFrame
-}
+    INN_response = [
+        {
+            'date': str(xx.xx.xx),
+            'keycol1': array(int64),
+            ...
+            'keycoln': array(int64)
+        },
+        {
+            ...
+        },
+    ]
+    applyment_response = [
+        {
+            'date': str(xx.xx.xx),
+            'keycol1': array(int64),
+            ...
+            'keycoln': array(int64)
+        },
+        {
+            ...
+        },
+    ]
+    application_response: [
+        {
+            'date': str(xx.xx.xx),
+            'keycol1': array(int64),
+            ...
+            'keycoln': array(int64)
+        },
+        {
+            ...
+        },
+    ]
 ```
-```python
-INN_dict: dict  # Данные отфильтрованные по ИНН
-applyment_dict: dict  # Данные отфильтрованные по ИНН + номеру заявки
-application_life: pd.DataFrame  # Жизненный цикл
-```
+```INN_response``` - список данных по ИНН
+```applyment_response``` - список данных по ИНН + номеру заявки
+```application_life``` - жизненный цикл заявки
