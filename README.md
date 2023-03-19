@@ -84,6 +84,8 @@ def return_value(msg, type, check=None) -> [int, str]:
         },
     ]
 ```
-```INN_response``` - список данных по ИНН
-```applyment_response``` - список данных по ИНН + номеру заявки
-```application_life``` - жизненный цикл заявки
+> ```INN_response``` - список данных по ИНН
+
+> ```applyment_response``` - список данных по ИНН + номеру заявки
+
+> ```application_life``` - жизненный цикл заявки
