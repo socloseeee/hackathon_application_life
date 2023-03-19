@@ -20,7 +20,7 @@ def read_data(columns, dates) -> tuple:
     data, numbers, INN = {}, set(), set()
     for date, i in zip(dates, range(sum(1 for x in Path('data').iterdir()))):
         data[date] = pd.read_excel(
-            os.path.abspath(f"data/_{dates[i]}.xlsx"),
+            Path(f"data/_{dates[i]}.xlsx"),
             # dtype={'Наряд КУРС':None, 'Номер ОТА ШПД':None},
             usecols=columns
         )
@@ -169,7 +169,7 @@ def selection_of_period(date_slice, dates) -> tuple:
 
 
 def dates_read_from_files(path=None) -> tuple:
-    content = os.listdir(path if path is not None else os.path.abspath("data"))  # сделать переменной
+    content = os.listdir(path if path is not None else Path("data"))  # сделать переменной
     return tuple(data[data.index('_') + 1:data.index('.xlsx')] for data in content)
 
 
@@ -244,8 +244,8 @@ if __name__ == "__main__":
             if len(values) == 0:
                 print('Неккоректный ИНН!')
                 sys.exit(1)
-            print('ИНН (response):')
-            print(INN_response, sep='\n\n')
+            # print('ИНН (response):')
+            # print(INN_response, sep='\n\n')
         else:
             INN_dict = files_data.copy()
         # print(args.order)
@@ -258,7 +258,7 @@ if __name__ == "__main__":
             applyment_response: list = []
             values = []
             # Сортируем по номеру заявки
-            print('\nНомер заявки (response):')
+            # print('\nНомер заявки (response):')
             for date in selected_period:
                 value = INN_dict[date].loc[INN_dict[date]['Номер заявки'] == applyment_number]
                 if not value.empty:
@@ -271,7 +271,7 @@ if __name__ == "__main__":
             if len(values) == 0:
                 print('Неккоректный номер заявки!')
                 sys.exit(1)
-            print(applyment_response, sep='\n\n')
+            # print(applyment_response, sep='\n\n')
         else:
             applyment_dict = INN_dict.copy()
 
@@ -290,7 +290,7 @@ if __name__ == "__main__":
             application_response.append({'date': application_life['date'].iloc[i]})
             for elem in application_life:
                 application_response[-1][elem] = application_life[elem].iloc[i]
-        print('\nЖизненный цикл (response):\n', application_response)
+        # print('\nЖизненный цикл (response):\n', application_response)
         sys.exit(0)
     else:
         print('Не совпадает количество переменных из консольного ввода!')
