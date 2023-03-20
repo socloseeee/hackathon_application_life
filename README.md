@@ -1,91 +1,23 @@
 # Hackathon Application Life
+
+## Функционал
+Решение должно собирать информацию из файлов таким образом, чтобы мы могли наглядно увидеть какой путь проходит заявка в разные даты. Введя номер заявки, ИНН или всё вместе, менеджер должен видеть в каком статусе она находилась за выбранный период времени.
+
+## Примеры
+
+![image](https://user-images.githubusercontent.com/65871712/226306285-d9593412-e768-4f6b-b134-04ad5931f363.png)
+
+
 ## Активировать
 1. python -m venv venv
 2. venv\Scritps\activate
 3. pip install -r requirements.txt (requirements.txt уже есть у нас)
 
-## Вводы
-1. Ввод года, месяца и дня (Ввод месяца и года закомментирован, но есть такая опция)
-```python
-start_day: int
-end_day: int
-month: str
-year: str
-```
-> Первый день ```start_day``` (x.03.23 - 15.03.23)
-> 
-> Последний день ```end_day``` (09.03.23 - x.03.23)
-2. Номер заявки (пока что без ИНН)
-```python
-applyment_number = return_value('Введите номер заявки > ', np.int64, numbers)
-```
-#### ___Функция___ ```return_value```:
-```python
-def return_value(msg, type, check=None) -> [int, str]:
-    while True:
-        try:
-            value = type(input(msg))
-        except Exception:
-            print('Неккоректный ввод!')
-            continue
-        if check == None:
-            break
-        if value in check:
-            break
-        print('Некорректный ввод!')
-    return value
-```
-### JSON 
-```python
-{
-    start_day: int,
-    end_day: int,
-    month: str,
-    year: str,
-    applyment_number: int
-}
-```
-## Вывод
-
-
-```python
-{
-    INN_response = [
-        {
-            'date': str(xx.xx.xx),
-            'keycol1': array(int64),
-            ...
-            'keycoln': array(int64)
-        },
-        {
-            ...
-        },
-    ]
-    applyment_response = [
-        {
-            'date': str(xx.xx.xx),
-            'keycol1': array(int64),
-            ...
-            'keycoln': array(int64)
-        },
-        {
-            ...
-        },
-    ]
-    application_response: [
-        {
-            'date': str(xx.xx.xx),
-            'keycol1': array(int64),
-            ...
-            'keycoln': array(int64)
-        },
-        {
-            ...
-        },
-    ]
-```
-> ```INN_response``` - список данных по ИНН
-
-> ```applyment_response``` - список данных по ИНН + номеру заявки
-
-> ```application_life``` - жизненный цикл заявки
+## Запуск
+1. Win+R -> cmd
+2. cd "абсолютный путь" (без кавычек)
+3. python xlsx_parser.py --start_date 09.03.23 --end_date 13.03.23 --INN 7707049388 --order 51390453
+> --start_date - начальная дата
+> --end_date - конечная дата
+> --INN - ИНН
+> --order - номер заявки
